@@ -1,0 +1,1 @@
+export { useSlateAutocompleteExtension } from './slateAutocompleteExtension';
