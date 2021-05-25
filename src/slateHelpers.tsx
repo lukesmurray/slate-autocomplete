@@ -1,4 +1,5 @@
 import { Editor, Location, Point, Range, Selection } from 'slate';
+import { ReactEditor } from 'slate-react';
 
 /**
  * Is a point at the end of a word
@@ -138,6 +139,21 @@ export const getTextFromTrigger = (
     range,
     textAfterTrigger: text.substring(1),
   };
+};
+
+export const setElementPositionByRange = (
+  editor: Editor,
+  { ref, at }: { ref: any; at: Range | null }
+) => {
+  if (!at) return;
+
+  const el = ref.current;
+  if (!el) return;
+
+  const domRange = ReactEditor.toDOMRange(editor, at);
+  const rect = domRange.getBoundingClientRect();
+  el.style.top = `${rect.top + window.pageYOffset + 24}px`;
+  el.style.left = `${rect.left + window.pageXOffset}px`;
 };
 
 // export const getMultiWordSearch = (
