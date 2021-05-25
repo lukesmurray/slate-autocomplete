@@ -18,13 +18,21 @@ const ExampleEditor = () => {
     ...plugin
   } = useSlateAutocompleteExtension({
     autocompleteOnChange: (editor, { maxSuggestions, search, setItems }) => {
-      setItems(
-        fakeData
-          .filter(d =>
-            d.text.toLocaleLowerCase().startsWith(search.toLocaleLowerCase())
-          )
-          .filter((v, i) => i < maxSuggestions)
-      );
+      const newItems = fakeData
+        // search filter
+        .filter(d => {
+          return d.text
+            .toLocaleLowerCase()
+            .startsWith(search.toLocaleLowerCase());
+        })
+        // max suggestions filter
+        .filter((v, i) => i < maxSuggestions)
+        // create interface items
+        .map(v => ({
+          key: v.text,
+          text: v.text,
+        }));
+      setItems(newItems);
     },
     onSelectItem: (editor, options) => {
       Transforms.insertText(editor, options.item.text, {

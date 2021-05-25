@@ -3,7 +3,7 @@ import isHotkey from 'is-hotkey';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import mergeRefs from 'react-merge-refs';
 import { Editor, Range } from 'slate';
-import { useSlateStatic } from 'slate-react';
+import { ReactEditor, useSlateStatic } from 'slate-react';
 import { OnChange, OnKeyDown, SlateExtension } from 'use-slate-with-extensions';
 import { ComboboxItem, ComboboxRoot } from './Combobox.styles';
 import { PortalBody } from './PortalBody';
@@ -41,6 +41,21 @@ export interface IComboboxItem {
    * Data available to onRenderItem.
    */
   data?: unknown;
+}
+
+function setElementPositionByRange(
+  editor: Editor,
+  { ref, at }: { ref: any; at: Range | null }
+) {
+  if (!at) return;
+
+  const el = ref.current;
+  if (!el) return;
+
+  const domRange = ReactEditor.toDOMRange(editor, at);
+  const rect = domRange.getBoundingClientRect();
+  el.style.top = `${rect.top + window.pageYOffset + 24}px`;
+  el.style.left = `${rect.left + window.pageXOffset}px`;
 }
 
 const getNextNonDisabledIndex = (
@@ -133,7 +148,6 @@ const useComboboxControls = (
   itemIndex: number,
   items: IComboboxItem[]
 ) => {
-  // Menu combobox
   const {
     closeMenu,
     getMenuProps,
@@ -145,16 +159,6 @@ const useComboboxControls = (
     highlightedIndex: itemIndex,
     items,
     circularNavigation: true,
-    // onInputValueChange: ({inputValue}) => {
-    //   setInputItems(
-    //     items.filter(item =>
-    //       item.toLowerCase().startsWith(inputValue.toLowerCase()),
-    //     ),
-    //   )
-    // },
-    // onSelectedItemChange: (changes) => {
-    //   console.info(changes);
-    // },
   });
   getMenuProps({}, { suppressRefError: true });
   getComboboxProps({}, { suppressRefError: true });
@@ -188,7 +192,7 @@ interface useSlateAutocompleteExtensionOptions {
     options: {
       maxSuggestions: number;
       search: string;
-      setItems: React.Dispatch<React.SetStateAction<IComboboxItem[]>>;
+      setItems: (items: IComboboxItem[]) => void;
     }
   ) => void;
   onSelectItem: (
@@ -318,7 +322,7 @@ export const useSlateAutocompleteExtension = (
 
           autocompleteOnChange(editor, {
             maxSuggestions,
-            search,
+            search: textAfterTrigger,
             setItems,
           });
         } else {
@@ -330,7 +334,7 @@ export const useSlateAutocompleteExtension = (
 
       return next(editor);
     },
-    [autocompleteOnChange, closeMenu, isOpen, maxSuggestions, search, trigger]
+    [autocompleteOnChange, closeMenu, isOpen, maxSuggestions, trigger]
   );
 
   return {
@@ -365,8 +369,13 @@ export const ComboboxContainer = ({
   const menuProps = combobox ? combobox.getMenuProps() : { ref: null };
 
   const ref = React.useRef<any>(null);
-  const multiRef = mergeRefs([menuProps.ref, ref]);
+
   const editor = useSlateStatic();
+  useEffect(() => {
+    editor && setElementPositionByRange(editor, { ref, at: targetRange });
+  }, [targetRange, editor]);
+
+  const multiRef = mergeRefs([menuProps.ref, ref]);
   if (!combobox) return null;
   return (
     <PortalBody>
