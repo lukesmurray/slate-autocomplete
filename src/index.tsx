@@ -1,1 +1,4 @@
-export { useSlateAutocompleteExtension } from './slateAutocompleteExtension';
+export {
+  ComboboxContainer,
+  useSlateAutocompleteExtension,
+} from './slateAutocompleteExtension';
