@@ -9,16 +9,14 @@ import {
 } from './combobox.types';
 import { ComboboxContainerProps } from './ComboboxContainer';
 import { getNextWrappingIndex } from './comboboxHelpers';
-import { getTextFromTrigger, isSelectionCollapsed } from './slateHelpers';
 
 export interface useSlateAutocompleteExtensionOptions {
-  trigger: string;
   autocompleteOnChange: (
     editor: Editor,
     options: {
-      maxSuggestions: number;
-      search: string;
       setItems: (items: IComboboxItem[]) => void;
+      setTargetRange: (range: Range | null) => void;
+      closeMenu: () => void;
     }
   ) => void;
   onSelectItem: (
@@ -29,7 +27,6 @@ export interface useSlateAutocompleteExtensionOptions {
     }
   ) => void;
   onRenderItem?: RenderFunction<ComboboxItemProps>;
-  maxSuggestions?: number;
 }
 
 export const useSlateAutocompleteExtension = (
@@ -37,32 +34,19 @@ export const useSlateAutocompleteExtension = (
 ): SlateExtension & {
   getComboBoxContainerProps: () => ComboboxContainerProps;
 } => {
-  const {
-    trigger,
-    autocompleteOnChange,
-    onSelectItem,
-    onRenderItem,
-    maxSuggestions: initialMaxSuggestions = 10,
-  } = options;
+  const { autocompleteOnChange, onSelectItem, onRenderItem } = options;
 
-  const [maxSuggestions, setMaxSuggestions] = useState(initialMaxSuggestions);
-  const [search, setSearch] = useState('');
   const [items, setItems] = useState<IComboboxItem[]>([]);
   const [targetRange, setTargetRange] = useState<Range | null>(null);
   const [itemIndex, setItemIndex] = useState<number>(0);
 
-  useEffect(() => {
-    setMaxSuggestions(initialMaxSuggestions);
-  }, [initialMaxSuggestions]);
+  const isOpen = targetRange !== null;
 
   const closeMenu = useCallback(() => {
     setTargetRange(null);
     setItems([]);
-    setSearch('');
     setItemIndex(0);
   }, []);
-
-  const isOpen = targetRange !== null;
 
   const getComboBoxContainerProps = useCallback((): ComboboxContainerProps => {
     return {
@@ -83,6 +67,10 @@ export const useSlateAutocompleteExtension = (
     onSelectItem,
     targetRange,
   ]);
+
+  useEffect(() => {
+    console.log('isOpen', isOpen);
+  }, [isOpen]);
 
   const handleKeyDown = useCallback<OnKeyDown>(
     (e, editor, next) => {
@@ -115,7 +103,7 @@ export const useSlateAutocompleteExtension = (
           if (items[itemIndex] && targetRange) {
             onSelectItem(editor, {
               item: items[itemIndex],
-              targetRange,
+              targetRange: items[itemIndex].targetRange ?? targetRange,
             });
           }
           closeMenu();
@@ -132,35 +120,14 @@ export const useSlateAutocompleteExtension = (
 
   const handleOnChange = useCallback<OnChange>(
     (editor, next) => {
-      const { selection } = editor;
-      if (selection !== null && isSelectionCollapsed(selection)) {
-        const cursor = Range.start(selection);
-        const isCursorAfterTrigger = getTextFromTrigger(editor, {
-          at: cursor,
-          trigger,
-        });
-
-        if (isCursorAfterTrigger) {
-          const { range, textAfterTrigger } = isCursorAfterTrigger;
-
-          setTargetRange(range);
-          setSearch(textAfterTrigger);
-
-          autocompleteOnChange(editor, {
-            maxSuggestions,
-            search: textAfterTrigger,
-            setItems,
-          });
-        } else {
-          if (isOpen) {
-            closeMenu();
-          }
-        }
-      }
-
+      autocompleteOnChange(editor, {
+        setItems,
+        closeMenu,
+        setTargetRange,
+      });
       return next(editor);
     },
-    [autocompleteOnChange, closeMenu, isOpen, maxSuggestions, trigger]
+    [autocompleteOnChange, closeMenu]
   );
 
   return {

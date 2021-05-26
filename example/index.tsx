@@ -3,48 +3,57 @@ import 'react-app-polyfill/ie11';
 import * as ReactDOM from 'react-dom';
 import { Transforms } from 'slate';
 import { Editable, Slate } from 'slate-react';
+import { useSlateWithExtensions } from 'use-slate-with-extensions';
 import {
-  useSlateState,
-  useSlateWithExtensions,
-} from 'use-slate-with-extensions';
-import { ComboboxContainer, useSlateAutocompleteExtension } from '../.';
+  ComboboxContainer,
+  onSearchCallback,
+  useSearchAfterWordBoundaries,
+  useSlateAutocompleteExtension,
+} from '../.';
 import './styles.css';
 
+const onSearch: onSearchCallback = (search, maxSuggestions, options) =>
+  search.length === 0
+    ? []
+    : fakeData
+        .filter(d =>
+          d.text.toLocaleLowerCase().startsWith(search.toLocaleLowerCase())
+        )
+        .filter((_, i) => i < maxSuggestions)
+        .map(v => ({
+          key: v.text,
+          text: v.text,
+          targetRange: options?.targetRange,
+        }));
+
 const ExampleEditor = () => {
-  const [value, onChange] = useSlateState();
+  // const onChange = useSearchAfterTrigger({
+  //   trigger: '/',
+  //   maxSuggestions: 10,
+  //   onSearch,
+  // });
+
+  const onChange = useSearchAfterWordBoundaries({
+    boundaryRegex: '^|\\s',
+    farthestToCloset: true,
+    maxBoundaries: 2,
+    maxSuggestions: 10,
+    onSearch,
+  });
 
   const {
     getComboBoxContainerProps,
     ...plugin
   } = useSlateAutocompleteExtension({
-    autocompleteOnChange: (editor, { maxSuggestions, search, setItems }) => {
-      const newItems = fakeData
-        // search filter
-        .filter(d => {
-          return d.text
-            .toLocaleLowerCase()
-            .startsWith(search.toLocaleLowerCase());
-        })
-        // max suggestions filter
-        .filter((v, i) => i < maxSuggestions)
-        // create interface items
-        .map(v => ({
-          key: v.text,
-          text: v.text,
-        }));
-      setItems(newItems);
-    },
+    autocompleteOnChange: onChange,
     onSelectItem: (editor, options) => {
       Transforms.insertText(editor, options.item.text, {
         at: options.targetRange,
       });
     },
-    trigger: '/',
   });
 
   const { getEditableProps, getSlateProps } = useSlateWithExtensions({
-    onChange,
-    value,
     extensions: [plugin],
   });
 

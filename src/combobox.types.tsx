@@ -1,8 +1,4 @@
-export enum ComboboxItemType {
-  Normal = 0,
-  Divider = 1,
-  Header = 2,
-}
+import { Range } from 'slate';
 
 export interface IComboboxItem {
   /**
@@ -18,13 +14,19 @@ export interface IComboboxItem {
   /**
    * Text to render for this option
    */
-  itemType?: ComboboxItemType;
+  itemType?: 'normal' | 'divide' | 'header';
 
   /**
    * Whether the option is disabled
    * @defaultvalue false
    */
   disabled?: boolean;
+
+  /**
+   * optional target range for this combobox if it differs from target range
+   * of general combo box
+   */
+  targetRange?: Range;
 
   /**
    * Data available to onRenderItem.
