@@ -1,5 +1,5 @@
 import isHotkey from 'is-hotkey';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Editor, Range } from 'slate';
 import { OnChange, OnKeyDown, SlateExtension } from 'use-slate-with-extensions';
 import {
@@ -67,10 +67,6 @@ export const useSlateAutocompleteExtension = (
     onSelectItem,
     targetRange,
   ]);
-
-  useEffect(() => {
-    console.log('isOpen', isOpen);
-  }, [isOpen]);
 
   const handleKeyDown = useCallback<OnKeyDown>(
     (e, editor, next) => {
