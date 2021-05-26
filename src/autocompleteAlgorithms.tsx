@@ -123,15 +123,14 @@ export const useSearchAfterWordBoundaries = (options: {
             searchStart && Editor.range(editor, searchStart, cursor);
           const search = getEditorText(editor, searchRange);
           if (searchRange !== undefined) {
-            if (targetRange === undefined) {
-              targetRange = searchRange;
-            }
-
             foundSuggestions.push(
               ...onSearch(search, remainingSuggestions, {
                 targetRange: searchRange,
               })
             );
+            if (targetRange === undefined && foundSuggestions.length > 0) {
+              targetRange = searchRange;
+            }
           }
         }
 

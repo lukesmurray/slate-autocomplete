@@ -12,12 +12,18 @@ import {
 } from '../.';
 import './styles.css';
 
-const onSearch: onSearchCallback = (search, maxSuggestions, options) =>
+const autocompleteOnSearch: onSearchCallback = (
+  search,
+  maxSuggestions,
+  options
+) =>
   search.length === 0
     ? []
     : fakeData
-        .filter(d =>
-          d.text.toLocaleLowerCase().startsWith(search.toLocaleLowerCase())
+        .filter(
+          d =>
+            d.text.toLocaleLowerCase().startsWith(search.toLocaleLowerCase()) &&
+            d.text.toLocaleLowerCase() !== search.toLocaleLowerCase()
         )
         .filter((_, i) => i < maxSuggestions)
         .map(v => ({
@@ -27,30 +33,31 @@ const onSearch: onSearchCallback = (search, maxSuggestions, options) =>
         }));
 
 const ExampleEditor = () => {
-  // const onChange = useSearchAfterTrigger({
+  // const autocompleteOnChange = useSearchAfterTrigger({
   //   trigger: '/',
   //   maxSuggestions: 10,
-  //   onSearch,
+  //   autocompleteOnSearch,
   // });
 
-  const onChange = useSearchAfterWordBoundaries({
+  const autocompleteOnChange = useSearchAfterWordBoundaries({
     boundaryRegex: '^|\\s',
     farthestToCloset: true,
     maxBoundaries: 2,
     maxSuggestions: 10,
-    onSearch,
+    onSearch: autocompleteOnSearch,
   });
 
+  const autocompleteOnSelectItem = (editor, options) => {
+    Transforms.insertText(editor, options.item.text, {
+      at: options.targetRange,
+    });
+  };
   const {
     getComboBoxContainerProps,
     ...plugin
   } = useSlateAutocompleteExtension({
-    autocompleteOnChange: onChange,
-    onSelectItem: (editor, options) => {
-      Transforms.insertText(editor, options.item.text, {
-        at: options.targetRange,
-      });
-    },
+    autocompleteOnChange: autocompleteOnChange,
+    onSelectItem: autocompleteOnSelectItem,
   });
 
   const { getEditableProps, getSlateProps } = useSlateWithExtensions({
@@ -67,8 +74,28 @@ const ExampleEditor = () => {
 
 const App = () => {
   return (
-    <div style={{ minHeight: '100%' }}>
-      <ExampleEditor />
+    <div
+      style={{
+        minHeight: '100%',
+        display: 'grid',
+        gridTemplateRows: 'min-content 1fr',
+      }}
+    >
+      <header>
+        {' '}
+        <h2>Slate Autocomplete</h2>{' '}
+        <p>
+          {' '}
+          Implementation of autocomplete in SlateJS inspired by{' '}
+          <a href="https://github.com/udecode/slate-plugins">
+            slate-plugins
+          </a>{' '}
+          combobox example. The package exposes logic for rendering an
+          autocomplete dropdown as well as some autocomplete algorithms to
+          support common autocomplete implementations{' '}
+        </p>{' '}
+      </header>{' '}
+      <ExampleEditor />{' '}
     </div>
   );
 };
@@ -76,304 +103,104 @@ const App = () => {
 ReactDOM.render(<App />, document.getElementById('root'));
 
 const fakeData = [
-  {
-    text: 'Turner, Schultz and Nader',
-  },
-  {
-    text: 'Hand Group',
-  },
-  {
-    text: 'Haag Inc',
-  },
-  {
-    text: 'Runolfsdottir-Hansen',
-  },
-  {
-    text: 'Zulauf LLC',
-  },
-  {
-    text: 'Schimmel Inc',
-  },
-  {
-    text: 'Jones-Macejkovic',
-  },
-  {
-    text: 'Cummerata-Gaylord',
-  },
-  {
-    text: 'Beahan Group',
-  },
-  {
-    text: 'Lesch-Shanahan',
-  },
-  {
-    text: 'Torphy-Daugherty',
-  },
-  {
-    text: 'Beier-Hermiston',
-  },
-  {
-    text: 'Toy-Kuhn',
-  },
-  {
-    text: 'Daugherty Group',
-  },
-  {
-    text: 'Boyle-Purdy',
-  },
-  {
-    text: 'Leannon and Sons',
-  },
-  {
-    text: 'Gutmann, Durgan and Rogahn',
-  },
-  {
-    text: 'Farrell LLC',
-  },
-  {
-    text: 'Stark Group',
-  },
-  {
-    text: 'Dare Group',
-  },
-  {
-    text: 'Goyette and Sons',
-  },
-  {
-    text: 'Stanton-Beatty',
-  },
-  {
-    text: 'Vandervort, Hessel and Nicolas',
-  },
-  {
-    text: 'Turcotte-Hudson',
-  },
-  {
-    text: 'Cummings and Sons',
-  },
-  {
-    text: 'Nienow, Bayer and Schumm',
-  },
-  {
-    text: 'Skiles Group',
-  },
-  {
-    text: "O'Keefe, Moen and Anderson",
-  },
-  {
-    text: 'Kirlin Group',
-  },
-  {
-    text: 'Schaefer and Sons',
-  },
-  {
-    text: 'Daniel-Macejkovic',
-  },
-  {
-    text: 'Towne, Pfannerstill and Connelly',
-  },
-  {
-    text: 'Friesen, Connelly and Schmitt',
-  },
-  {
-    text: 'Boyer, Armstrong and Purdy',
-  },
-  {
-    text: 'Mohr Inc',
-  },
-  {
-    text: 'Rowe, Marquardt and Maggio',
-  },
-  {
-    text: 'Ernser, Brown and Connelly',
-  },
-  {
-    text: 'Fisher-Keebler',
-  },
-  {
-    text: 'Greenholt, Jerde and Keebler',
-  },
-  {
-    text: 'Nolan, Brakus and Mitchell',
-  },
-  {
-    text: 'Brakus Inc',
-  },
-  {
-    text: 'Metz, Schmeler and Mante',
-  },
-  {
-    text: 'Dach-West',
-  },
-  {
-    text: 'Cronin and Sons',
-  },
-  {
-    text: 'Cartwright LLC',
-  },
-  {
-    text: 'Reynolds, Batz and Kiehn',
-  },
-  {
-    text: 'Ferry, Weissnat and Cole',
-  },
-  {
-    text: 'Hyatt-Walsh',
-  },
-  {
-    text: 'Ruecker-Lindgren',
-  },
-  {
-    text: 'Fadel LLC',
-  },
-  {
-    text: 'Walter Group',
-  },
-  {
-    text: 'Bednar, Shields and Denesik',
-  },
-  {
-    text: 'Ullrich Inc',
-  },
-  {
-    text: 'Quigley, Keeling and Marks',
-  },
-  {
-    text: 'Kuhn-Yost',
-  },
-  {
-    text: 'Brown Group',
-  },
-  {
-    text: 'Stamm-Goldner',
-  },
-  {
-    text: 'Lowe, Aufderhar and Breitenberg',
-  },
-  {
-    text: 'Jast, Towne and Denesik',
-  },
-  {
-    text: 'Huels Group',
-  },
-  {
-    text: 'Oberbrunner LLC',
-  },
-  {
-    text: 'Runolfsdottir and Sons',
-  },
-  {
-    text: 'Franecki-Waters',
-  },
-  {
-    text: "D'Amore-O'Connell",
-  },
-  {
-    text: 'Luettgen-Rath',
-  },
-  {
-    text: 'Jenkins, Fritsch and Schneider',
-  },
-  {
-    text: 'Tillman LLC',
-  },
-  {
-    text: 'Weimann-Grady',
-  },
-  {
-    text: 'Rau-Bahringer',
-  },
-  {
-    text: 'Boyer-Blanda',
-  },
-  {
-    text: 'Dooley, Bashirian and Ward',
-  },
-  {
-    text: 'Daugherty, Wilderman and Crooks',
-  },
-  {
-    text: 'Johnston Inc',
-  },
-  {
-    text: 'Leannon Inc',
-  },
-  {
-    text: 'Hyatt Group',
-  },
-  {
-    text: 'Mohr and Sons',
-  },
-  {
-    text: 'Lind and Sons',
-  },
-  {
-    text: 'Heaney, Haley and Ratke',
-  },
-  {
-    text: 'West, Fay and Herman',
-  },
-  {
-    text: 'Krajcik LLC',
-  },
-  {
-    text: 'Kerluke, Moen and Waters',
-  },
-  {
-    text: 'Prohaska Inc',
-  },
-  {
-    text: 'Morissette-Heathcote',
-  },
-  {
-    text: "Adams, O'Connell and Oberbrunner",
-  },
-  {
-    text: 'DuBuque-Stark',
-  },
-  {
-    text: 'Rau, Wyman and Hane',
-  },
-  {
-    text: 'Reinger Inc',
-  },
-  {
-    text: 'Ernser-Pacocha',
-  },
-  {
-    text: 'Moen-Ryan',
-  },
-  {
-    text: 'Casper-Kunze',
-  },
-  {
-    text: 'Mann-Wehner',
-  },
-  {
-    text: 'Moen-Cole',
-  },
-  {
-    text: 'Thiel, Cassin and Terry',
-  },
-  {
-    text: 'DuBuque, Torphy and Harber',
-  },
-  {
-    text: 'Ortiz-Brown',
-  },
-  {
-    text: 'Kerluke, Abshire and Ondricka',
-  },
-  {
-    text: 'Connelly Inc',
-  },
-  {
-    text: 'Kunde, Grimes and Schumm',
-  },
-  {
-    text: 'Medhurst-Hegmann',
-  },
-  {
-    text: 'McGlynn-Lesch',
-  },
+  { text: "Adams, O'Connell and Oberbrunner" },
+  { text: "D'Amore-O'Connell" },
+  { text: "O'Keefe, Moen and Anderson" },
+  { text: 'Beahan Group' },
+  { text: 'Bednar, Shields and Denesik' },
+  { text: 'Beier-Hermiston' },
+  { text: 'Boyer, Armstrong and Purdy' },
+  { text: 'Boyer-Blanda' },
+  { text: 'Boyle-Purdy' },
+  { text: 'Brakus Inc' },
+  { text: 'Brown Group' },
+  { text: 'Cartwright LLC' },
+  { text: 'Casper-Kunze' },
+  { text: 'Connelly Inc' },
+  { text: 'Cronin and Sons' },
+  { text: 'Cummerata-Gaylord' },
+  { text: 'Cummings and Sons' },
+  { text: 'Dach-West' },
+  { text: 'Daniel-Macejkovic' },
+  { text: 'Dare Group' },
+  { text: 'Daugherty Group' },
+  { text: 'Daugherty, Wilderman and Crooks' },
+  { text: 'Dooley, Bashirian and Ward' },
+  { text: 'DuBuque, Torphy and Harber' },
+  { text: 'DuBuque-Stark' },
+  { text: 'Ernser, Brown and Connelly' },
+  { text: 'Ernser-Pacocha' },
+  { text: 'Fadel LLC' },
+  { text: 'Farrell LLC' },
+  { text: 'Ferry, Weissnat and Cole' },
+  { text: 'Fisher-Keebler' },
+  { text: 'Franecki-Waters' },
+  { text: 'Friesen, Connelly and Schmitt' },
+  { text: 'Goyette and Sons' },
+  { text: 'Greenholt, Jerde and Keebler' },
+  { text: 'Gutmann, Durgan and Rogahn' },
+  { text: 'Haag Inc' },
+  { text: 'Hand Group' },
+  { text: 'Heaney, Haley and Ratke' },
+  { text: 'Huels Group' },
+  { text: 'Hyatt Group' },
+  { text: 'Hyatt-Walsh' },
+  { text: 'Jast, Towne and Denesik' },
+  { text: 'Jenkins, Fritsch and Schneider' },
+  { text: 'Johnston Inc' },
+  { text: 'Jones-Macejkovic' },
+  { text: 'Kerluke, Abshire and Ondricka' },
+  { text: 'Kerluke, Moen and Waters' },
+  { text: 'Kirlin Group' },
+  { text: 'Krajcik LLC' },
+  { text: 'Kuhn-Yost' },
+  { text: 'Kunde, Grimes and Schumm' },
+  { text: 'Leannon Inc' },
+  { text: 'Leannon and Sons' },
+  { text: 'Lesch-Shanahan' },
+  { text: 'Lind and Sons' },
+  { text: 'Lowe, Aufderhar and Breitenberg' },
+  { text: 'Luettgen-Rath' },
+  { text: 'Mann-Wehner' },
+  { text: 'McGlynn-Lesch' },
+  { text: 'Medhurst-Hegmann' },
+  { text: 'Metz, Schmeler and Mante' },
+  { text: 'Moen-Cole' },
+  { text: 'Moen-Ryan' },
+  { text: 'Mohr Inc' },
+  { text: 'Mohr and Sons' },
+  { text: 'Morissette-Heathcote' },
+  { text: 'Nienow, Bayer and Schumm' },
+  { text: 'Nolan, Brakus and Mitchell' },
+  { text: 'Oberbrunner LLC' },
+  { text: 'Ortiz-Brown' },
+  { text: 'Prohaska Inc' },
+  { text: 'Quigley, Keeling and Marks' },
+  { text: 'Rau, Wyman and Hane' },
+  { text: 'Rau-Bahringer' },
+  { text: 'Reinger Inc' },
+  { text: 'Reynolds, Batz and Kiehn' },
+  { text: 'Rowe, Marquardt and Maggio' },
+  { text: 'Ruecker-Lindgren' },
+  { text: 'Runolfsdottir and Sons' },
+  { text: 'Runolfsdottir-Hansen' },
+  { text: 'Schaefer and Sons' },
+  { text: 'Schimmel Inc' },
+  { text: 'Skiles Group' },
+  { text: 'Stamm-Goldner' },
+  { text: 'Stanton-Beatty' },
+  { text: 'Stark Group' },
+  { text: 'Thiel, Cassin and Terry' },
+  { text: 'Tillman LLC' },
+  { text: 'Torphy-Daugherty' },
+  { text: 'Towne, Pfannerstill and Connelly' },
+  { text: 'Toy-Kuhn' },
+  { text: 'Turcotte-Hudson' },
+  { text: 'Turner, Schultz and Nader' },
+  { text: 'Ullrich Inc' },
+  { text: 'Vandervort, Hessel and Nicolas' },
+  { text: 'Walter Group' },
+  { text: 'Weimann-Grady' },
+  { text: 'West, Fay and Herman' },
+  { text: 'Zulauf LLC' },
 ];

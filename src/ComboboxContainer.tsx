@@ -59,7 +59,7 @@ export const ComboboxContainer = ({
                   e.preventDefault();
                   onSelectItem(editor, {
                     item,
-                    targetRange: targetRange!,
+                    targetRange: item.targetRange ?? targetRange!,
                   });
                   closeMenu();
                 }}

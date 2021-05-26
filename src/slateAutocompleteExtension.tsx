@@ -40,6 +40,15 @@ export const useSlateAutocompleteExtension = (
   const [targetRange, setTargetRange] = useState<Range | null>(null);
   const [itemIndex, setItemIndex] = useState<number>(0);
 
+  // this is an interesting effect where the start of the autocomplete
+  // follows the current highlighted item. might be a bit weird feeling
+  // useEffect(() => {
+  //   const item = items[itemIndex];
+  //   if (item && item.targetRange !== undefined) {
+  //     setTargetRange(item.targetRange);
+  //   }
+  // }, [itemIndex, items]);
+
   const isOpen = targetRange !== null;
 
   const closeMenu = useCallback(() => {
