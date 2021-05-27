@@ -33,7 +33,7 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "slate-autocomplete",
+  "name": "@slate-extensions/slate-autocomplete",
   "author": "Luke Murray",
   "module": "dist/slate-autocomplete.esm.js",
   "size-limit": [

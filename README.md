@@ -46,7 +46,7 @@ const ExampleEditor = () => {
   } = useSlateAutocompleteExtension({
     autocompleteOnChange: autocompleteOnChange,
     onSelectItem: autocompleteOnSelectItem,
-  });
+  }
 
   const { getEditableProps, getSlateProps } = useSlateWithExtensions({
     extensions: [plugin],
